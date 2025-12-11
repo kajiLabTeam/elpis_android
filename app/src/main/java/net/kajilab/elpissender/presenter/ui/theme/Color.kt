@@ -1,4 +1,4 @@
-package net.kajilab.elpissender.ui.theme
+package net.kajilab.elpissender.presenter.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

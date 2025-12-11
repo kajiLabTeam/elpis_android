@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
     id("com.google.gms.google-services")
+    id("org.jlleitschuh.gradle.ktlint") version "12.1.2"
 }
 
 android {
@@ -27,7 +28,7 @@ android {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }
@@ -62,6 +63,7 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.security.crypto.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -71,28 +73,28 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
 
     // jetpack
-    implementation (libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
 
-    //ibeacon
+    // ibeacon
     implementation(libs.android.beacon.library)
 
-    //easyPermission
+    // easyPermission
     implementation(libs.easypermissions)
     implementation(libs.accompanist.permissions)
 
     // Rxjava
-    implementation (libs.rxandroid)
-    implementation (libs.rxjava)
+    implementation(libs.rxandroid)
+    implementation(libs.rxjava)
 
     // http
-    implementation (libs.retrofit)
-    implementation (libs.logging.interceptor)
-    implementation (libs.converter.gson)
+    implementation(libs.retrofit)
+    implementation(libs.logging.interceptor)
+    implementation(libs.converter.gson)
 
-    //workManager
-    implementation (libs.androidx.work.runtime.ktx)
+    // workManager
+    implementation(libs.androidx.work.runtime.ktx)
 
-    //firebase
+    // firebase
 //    implementation(platform(libs.firebase.bom))
 //    implementation(libs.firebase.analytics)
 }

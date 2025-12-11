@@ -7,5 +7,5 @@ data class LogData(
     @SerializedName("host") val host: String,
     @SerializedName("result") val result: String,
     @SerializedName("short_message") val shortMessage: String,
-    @SerializedName("level") val level: Int
+    @SerializedName("level") val level: Int,
 )

@@ -51,7 +51,7 @@
             </intent-filter>
         </activity>
         <service
-            android:name=".Service.SensingService"
+            android:name=".service.SensingService"
             android:foregroundServiceType="dataSync|connectedDevice|location"
             android:enabled="true"
             android:exported="false"

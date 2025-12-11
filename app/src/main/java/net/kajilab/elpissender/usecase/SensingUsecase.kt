@@ -1,38 +1,27 @@
 package net.kajilab.elpissender.usecase
 
-import android.app.Activity
-import android.app.ForegroundServiceStartNotAllowedException
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.content.Context
-import android.content.Intent
-import android.os.Build
-import android.os.IBinder
 import android.os.PowerManager
 import android.util.Log
-import androidx.core.app.NotificationCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import net.kajilab.elpissender.API.SearedPreferenceApi
-import net.kajilab.elpissender.API.http.ApiResponse
-import net.kajilab.elpissender.R
-import net.kajilab.elpissender.Repository.BLERepository
-import net.kajilab.elpissender.Repository.SensingRepository
-import net.kajilab.elpissender.Repository.SensorBase
-import net.kajilab.elpissender.Repository.UserRepository
-import net.kajilab.elpissender.Repository.WiFiRepository
-import net.kajilab.elpissender.entity.User
+import net.kajilab.elpissender.api.SharedPreferenceApi
+import net.kajilab.elpissender.api.http.ApiResponse
+import net.kajilab.elpissender.repository.BLERepository
+import net.kajilab.elpissender.repository.SensingRepository
+import net.kajilab.elpissender.repository.SensorBase
+import net.kajilab.elpissender.repository.UserRepository
+import net.kajilab.elpissender.repository.WiFiRepository
 import java.io.File
 
 class SensingUsecase(
-    private val context: Context
+    private val context: Context,
 ) {
     private val apiResponse = ApiResponse(context)
     private val sensorRepository = SensingRepository(context)
-    private val searedPreferenceApi = SearedPreferenceApi()
+    private val sharedPreferenceApi = SharedPreferenceApi()
     private val userRepository = UserRepository()
 
     private var scanFlag = false
@@ -45,11 +34,12 @@ class SensingUsecase(
 
     private fun acquireWakeLock() {
         val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
-        wakeLock = powerManager.newWakeLock(
-            PowerManager.PARTIAL_WAKE_LOCK,
-            "SensingUsecase::WakeLock"
-        )
-        wakeLock?.acquire(10*60*1000L /*10 minutes*/)
+        wakeLock =
+            powerManager.newWakeLock(
+                PowerManager.PARTIAL_WAKE_LOCK,
+                "SensingUsecase::WakeLock",
+            )
+        wakeLock?.acquire(10 * 60 * 1000L) // 10 minutes
     }
 
     private fun releaseWakeLock() {
@@ -57,25 +47,27 @@ class SensingUsecase(
         wakeLock = null
     }
 
-    suspend fun firstStart(){
-        val sensingTime = searedPreferenceApi.getIntegerValueByKey(
-            key = "sensingTime",
-            context = context,
-            defaultValue = 5
-        )
-        val waitTime = searedPreferenceApi.getIntegerValueByKey(
-            key = "waitTime",
-            context = context,
-            defaultValue = 10
-        )
+    suspend fun firstStart() {
+        val sensingTime =
+            sharedPreferenceApi.getIntegerValueByKey(
+                key = "sensingTime",
+                context = context,
+                defaultValue = 5,
+            )
+        val waitTime =
+            sharedPreferenceApi.getIntegerValueByKey(
+                key = "waitTime",
+                context = context,
+                defaultValue = 10,
+            )
         scanFlag = true
         timerStart(
             fileName = "background",
             onStopped = {
-                Log.d("SensingService","BackGroundで一回実行されたよ")
+                Log.d("SensingService", "BackGroundで一回実行されたよ")
             },
             sensingTime = sensingTime,
-            waitTime = waitTime
+            waitTime = waitTime,
         )
     }
 
@@ -84,13 +76,13 @@ class SensingUsecase(
         if (targetSensors.isNotEmpty()) {
             stop(
                 onStopped = {
-                    Log.d("SensingService","BackGroundで一回実行されたよ")
-                }
+                    Log.d("SensingService", "BackGroundで一回実行されたよ")
+                },
             )
         }
     }
 
-    fun start(fileName:String){
+    fun start(fileName: String) {
         addSensor(context = context)
 
         val samplingFrequency = -1.0
@@ -98,16 +90,15 @@ class SensingUsecase(
             sensorRepository.sensorStart(
                 fileName = fileName,
                 sensors = targetSensors,
-                samplingFrequency = samplingFrequency
+                samplingFrequency = samplingFrequency,
             )
         }
     }
 
     fun stop(
-        onStopped:() -> Unit,
-        onSend:((List<File?>)->Unit)? = null
-    ){
-
+        onStopped: () -> Unit,
+        onSend: ((List<File?>) -> Unit)? = null,
+    ) {
         sensorRepository.sensorStop(
             sensors = targetSensors,
             onStopped = { sensorFileList ->
@@ -115,54 +106,56 @@ class SensingUsecase(
                 val wifiFile = sensorFileList[1]
 
                 if (onSend != null) {
-                    onSend( listOf( bleFile, wifiFile ) )
-                }else{
+                    onSend(listOf(bleFile, wifiFile))
+                } else {
                     val user = userRepository.getUserSetting(context)
-                    if(
+                    if (
                         bleFile != null &&
                         wifiFile != null &&
                         user.userName != "" &&
                         user.password != "" &&
                         user.serverUrl != ""
-                    ){
+                    ) {
                         apiResponse.postCsvData(
                             wifiFile,
                             bleFile,
                             user.userName,
                             user.password,
-                            user.serverUrl
+                            user.serverUrl,
                         )
                     }
                 }
 
                 onStopped()
-            }
+            },
         )
         targetSensors = mutableListOf() // センサーをリセット
+
+        sensorRepository.onCleared() // メモリーリークを防止する
     }
 
     suspend fun timerStart(
-        fileName:String,
-        onStopped:() -> Unit,
-        sensingSecond:Int,
-        onSend: ((List<File?>) -> Unit)? = null
-    ){
+        fileName: String,
+        onStopped: () -> Unit,
+        sensingSecond: Int,
+        onSend: ((List<File?>) -> Unit)? = null,
+    ) {
         start(fileName)
         Log.d("Timer", "タイマー開始")
         delay(sensingSecond * 1000L)
         Log.d("Timer", "タイマー終了")
         stop(
             onStopped = onStopped,
-            onSend = onSend
+            onSend = onSend,
         )
     }
 
-    suspend private fun timerStart(
-        fileName:String,
-        onStopped:() -> Unit,
-        sensingTime:Int,
-        waitTime:Int
-    ){
+    private suspend fun timerStart(
+        fileName: String,
+        onStopped: () -> Unit,
+        sensingTime: Int,
+        waitTime: Int,
+    ) {
         acquireWakeLock() // WakeLockを取得
         try {
             while (scanFlag) {
@@ -181,7 +174,7 @@ class SensingUsecase(
         }
     }
 
-    private fun addSensor(context: Context){
+    private fun addSensor(context: Context) {
         targetSensors.add(BLERepository(context))
         targetSensors.add(WiFiRepository(context))
     }

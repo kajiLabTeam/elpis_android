@@ -7,15 +7,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import net.kajilab.elpissender.Presenter.ui.theme.EstimatingLocationUsingRadioWavesTheme
-import net.kajilab.elpissender.Presenter.ui.view.MainView
-
+import net.kajilab.elpissender.presenter.ui.theme.EstimatingLocationUsingRadioWavesTheme
+import net.kajilab.elpissender.presenter.ui.view.MainView
 
 class MainActivity : ComponentActivity() {
-
-    //tagName
-    private val TAG: String = "MainActivity"
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -29,4 +24,3 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-
