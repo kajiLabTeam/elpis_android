@@ -65,7 +65,7 @@ class MainViewModel (application: Application): AndroidViewModel(application) {
     private val _uploadState = MutableStateFlow<UploadState>(UploadState.Idle)
     val uploadState: StateFlow<UploadState> = _uploadState.asStateFlow()
 
-    private val _bucketName = MutableStateFlow("test")
+    private val _bucketName = MutableStateFlow("fingerprint")
     val bucketName: StateFlow<String> = _bucketName.asStateFlow()
 
     fun setBucketName(name: String) {
