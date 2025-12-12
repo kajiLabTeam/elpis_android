@@ -1,4 +1,4 @@
 <resources>
     <string name="app_name">elpis</string>
-    <string name="base_url">https://elpis-m1.kajilab.dev/</string>
+    <string name="base_url">https://minio-api.kajilab.dev/</string>
 </resources>
