@@ -83,7 +83,8 @@ class BLEApi {
 
             // スキャンのセッティング
             val scanSettings = ScanSettings.Builder()
-                .setScanMode(ScanSettings.SCAN_MODE_LOW_POWER)  // foreground serviceでやろうとするとこのスキャンモードが強制。
+                .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)  // 高頻度スキャン（バッテリー消費増加）
+                .setReportDelay(0)  // 即時コールバック
                 .build()
             val scanFilters = mutableListOf<ScanFilter>()
 
