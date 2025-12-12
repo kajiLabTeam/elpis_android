@@ -69,9 +69,9 @@ class BLERepository(context: Context): SensorBase(context) {
                     val majorInt = major.toInt(16)
                     val minorInt = minor.toInt(16)
 
-                    Log.d(TAG, "uuid: $uuid, major: $majorInt, minor: $minorInt")
+                    Log.d(TAG, "uuid: $uuid, major: $majorInt, minor: $minorInt, rssi: $rssi")
 
-                    val data = "$time , $uuid , $rssi"
+                    val data = "$time , $uuid , $majorInt , $minorInt , $rssi"
                     addQueue(
                         sensorName = sensorName,
                         timeStamp = time,
