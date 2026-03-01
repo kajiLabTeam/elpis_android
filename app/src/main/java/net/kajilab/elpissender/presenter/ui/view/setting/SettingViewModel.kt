@@ -72,7 +72,7 @@ class SettingViewModel : ViewModel() {
     ) {
         viewModelScope.launch {
             sensingUsecase?.timerStart(
-                fileName = "${sampleType}_room_${roomId}",
+                fileName = "${sampleType}_room_$roomId",
                 onStopped = {
                     Log.d("SettingViewModel", "センシングが停止しました")
                     onStopped()
