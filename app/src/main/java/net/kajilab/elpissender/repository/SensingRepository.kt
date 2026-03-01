@@ -3,10 +3,6 @@ package net.kajilab.elpissender.repository
 import android.app.Activity
 import android.content.Context
 import android.util.Log
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.core.Single
-import io.reactivex.rxjava3.disposables.CompositeDisposable
-import io.reactivex.rxjava3.schedulers.Schedulers
 import java.io.File
 
 class SensingRepository(context: Context) {
@@ -26,7 +22,9 @@ class SensingRepository(context: Context) {
         samplingFrequency: Double,
     ) {
         require(fileName.isNotBlank()) { "File name cannot be empty" }
-        require(samplingFrequency > 0) { "Sampling frequency must be positive" }
+        require(samplingFrequency == -1.0 || samplingFrequency > 0) {
+            "Sampling frequency must be positive or -1.0"
+        }
         require(sensors.isNotEmpty()) { "Sensors list cannot be empty" }
 
         for (sensor in sensors) {
@@ -44,37 +42,20 @@ class SensingRepository(context: Context) {
         }
     }
 
-    private val compositeDisposable = CompositeDisposable()
-
     fun sensorStop(
         sensors: MutableList<SensorBase>,
         onStopped: (List<File?>) -> Unit,
     ) {
-        val singles =
+        val files =
             sensors.map { sensor ->
-                sensor.stop() // This should return Single<File?>
+                try {
+                    sensor.stop().blockingGet()
+                } catch (e: Exception) {
+                    Log.e(tag, "センサー停止 失敗", e)
+                    null
+                }
             }
-
-        compositeDisposable.add(
-            Single.zip(singles) { results ->
-                results.map { it as File? }
-            }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                    { files ->
-                        Log.d(tag, "センサー停止 成功")
-                        // センサーが終了した時にMainActivityに伝える。
-                        onStopped(files)
-                    },
-                    { e ->
-                        Log.e(tag, "センサー停止 失敗", e)
-                    },
-                ),
-        )
-    }
-
-    fun onCleared() {
-        compositeDisposable.clear()
+        Log.d(tag, "センサー停止 完了")
+        onStopped(files)
     }
 }

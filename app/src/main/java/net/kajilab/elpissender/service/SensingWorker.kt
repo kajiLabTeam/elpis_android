@@ -45,7 +45,7 @@ class SensingWorker(
         serviceScope.launch {
             logSendRepository.sendLog("start", "センシングを開始しました", 1)
             sensingUsecase.timerStart(
-                fileName = "",
+                fileName = "worker_sensing",
                 onStopped = {
                     logSendRepository.sendLog("end", "センシングを終了しました。", 1)
                     Log.d("SettingViewModel", "センシングが停止しました")

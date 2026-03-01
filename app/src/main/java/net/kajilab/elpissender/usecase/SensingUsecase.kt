@@ -14,6 +14,7 @@ import net.kajilab.elpissender.repository.SensingRepository
 import net.kajilab.elpissender.repository.SensorBase
 import net.kajilab.elpissender.repository.UserRepository
 import net.kajilab.elpissender.repository.WiFiRepository
+import net.kajilab.elpissender.utils.DateUtils
 import java.io.File
 
 class SensingUsecase(
@@ -86,9 +87,10 @@ class SensingUsecase(
         addSensor(context = context)
 
         val samplingFrequency = -1.0
+        val resolvedFileName = resolveFileName(fileName)
         coroutineScope.launch {
             sensorRepository.sensorStart(
-                fileName = fileName,
+                fileName = resolvedFileName,
                 sensors = targetSensors,
                 samplingFrequency = samplingFrequency,
             )
@@ -130,8 +132,6 @@ class SensingUsecase(
             },
         )
         targetSensors = mutableListOf() // センサーをリセット
-
-        sensorRepository.onCleared() // メモリーリークを防止する
     }
 
     suspend fun timerStart(
@@ -177,5 +177,10 @@ class SensingUsecase(
     private fun addSensor(context: Context) {
         targetSensors.add(BLERepository(context))
         targetSensors.add(WiFiRepository(context))
+    }
+
+    private fun resolveFileName(fileName: String): String {
+        val normalized = fileName.trim()
+        return normalized.ifBlank { "sensing_${DateUtils.getNowDate()}" }
     }
 }
