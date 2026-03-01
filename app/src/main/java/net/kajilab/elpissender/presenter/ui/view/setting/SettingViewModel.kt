@@ -110,10 +110,12 @@ class SettingViewModel : ViewModel() {
     }
 
     fun stopSensing() {
-        sensingUsecase?.stop(
-            onStopped = {
-                Log.d("SettingViewModel", "センシングが停止しました")
-            },
-        )
+        viewModelScope.launch {
+            sensingUsecase?.stop(
+                onStopped = {
+                    Log.d("SettingViewModel", "センシングが停止しました")
+                },
+            )
+        }
     }
 }

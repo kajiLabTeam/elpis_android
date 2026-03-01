@@ -3,6 +3,8 @@ package net.kajilab.elpissender.repository
 import android.app.Activity
 import android.content.Context
 import android.util.Log
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.File
 
 class SensingRepository(context: Context) {
@@ -42,17 +44,19 @@ class SensingRepository(context: Context) {
         }
     }
 
-    fun sensorStop(
+    suspend fun sensorStop(
         sensors: MutableList<SensorBase>,
         onStopped: (List<File?>) -> Unit,
     ) {
         val files =
-            sensors.map { sensor ->
-                try {
-                    sensor.stop().blockingGet()
-                } catch (e: Exception) {
-                    Log.e(tag, "センサー停止 失敗", e)
-                    null
+            withContext(Dispatchers.IO) {
+                sensors.map { sensor ->
+                    try {
+                        sensor.stop().blockingGet()
+                    } catch (e: Exception) {
+                        Log.e(tag, "センサー停止 失敗", e)
+                        null
+                    }
                 }
             }
         Log.d(tag, "センサー停止 完了")

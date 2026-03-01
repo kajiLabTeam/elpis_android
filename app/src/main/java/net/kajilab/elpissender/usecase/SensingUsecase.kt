@@ -75,11 +75,13 @@ class SensingUsecase(
     fun finalStop() {
         scanFlag = false
         if (targetSensors.isNotEmpty()) {
-            stop(
-                onStopped = {
-                    Log.d("SensingService", "BackGroundで一回実行されたよ")
-                },
-            )
+            coroutineScope.launch {
+                stop(
+                    onStopped = {
+                        Log.d("SensingService", "BackGroundで一回実行されたよ")
+                    },
+                )
+            }
         }
     }
 
@@ -97,7 +99,7 @@ class SensingUsecase(
         }
     }
 
-    fun stop(
+    suspend fun stop(
         onStopped: () -> Unit,
         onSend: ((List<File?>) -> Unit)? = null,
     ) {
@@ -180,7 +182,13 @@ class SensingUsecase(
     }
 
     private fun resolveFileName(fileName: String): String {
-        val normalized = fileName.trim()
-        return normalized.ifBlank { "sensing_${DateUtils.getNowDate()}" }
+        val normalized =
+            fileName
+                .trim()
+                .ifBlank { "sensing_${DateUtils.getNowDate()}" }
+
+        return normalized
+            .replace(Regex("""[\\/:*?"<>|]"""), "_")
+            .replace(Regex("""\.\.+"""), "_")
     }
 }
