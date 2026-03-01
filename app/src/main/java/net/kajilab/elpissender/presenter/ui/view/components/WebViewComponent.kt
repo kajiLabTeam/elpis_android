@@ -146,6 +146,9 @@ fun WebViewComponent(
                                     error: WebResourceError?,
                                 ) {
                                     super.onReceivedError(view, request, error)
+                                    if (request?.isForMainFrame != true) {
+                                        return
+                                    }
                                     isLoading = false
                                     hasError = true
                                     errorMessage = "ページの読み込みに失敗しました: ${error?.description}"

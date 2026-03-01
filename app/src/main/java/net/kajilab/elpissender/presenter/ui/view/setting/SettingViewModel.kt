@@ -54,7 +54,7 @@ class SettingViewModel : ViewModel() {
     fun startSensing10second() {
         viewModelScope.launch {
             sensingUsecase?.timerStart(
-                fileName = "",
+                fileName = "debug_10sec",
                 onStopped = {
                     Log.d("SettingViewModel", "センシングが停止しました")
                 },
@@ -72,7 +72,7 @@ class SettingViewModel : ViewModel() {
     ) {
         viewModelScope.launch {
             sensingUsecase?.timerStart(
-                fileName = "",
+                fileName = "${sampleType}_room_$roomId",
                 onStopped = {
                     Log.d("SettingViewModel", "センシングが停止しました")
                     onStopped()
@@ -104,16 +104,18 @@ class SettingViewModel : ViewModel() {
     fun startSensing() {
         viewModelScope.launch {
             sensingUsecase?.start(
-                fileName = "",
+                fileName = "manual_sensing",
             )
         }
     }
 
     fun stopSensing() {
-        sensingUsecase?.stop(
-            onStopped = {
-                Log.d("SettingViewModel", "センシングが停止しました")
-            },
-        )
+        viewModelScope.launch {
+            sensingUsecase?.stop(
+                onStopped = {
+                    Log.d("SettingViewModel", "センシングが停止しました")
+                },
+            )
+        }
     }
 }

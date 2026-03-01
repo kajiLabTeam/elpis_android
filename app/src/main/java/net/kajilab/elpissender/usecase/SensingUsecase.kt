@@ -14,6 +14,7 @@ import net.kajilab.elpissender.repository.SensingRepository
 import net.kajilab.elpissender.repository.SensorBase
 import net.kajilab.elpissender.repository.UserRepository
 import net.kajilab.elpissender.repository.WiFiRepository
+import net.kajilab.elpissender.utils.DateUtils
 import java.io.File
 
 class SensingUsecase(
@@ -74,11 +75,13 @@ class SensingUsecase(
     fun finalStop() {
         scanFlag = false
         if (targetSensors.isNotEmpty()) {
-            stop(
-                onStopped = {
-                    Log.d("SensingService", "BackGroundで一回実行されたよ")
-                },
-            )
+            coroutineScope.launch {
+                stop(
+                    onStopped = {
+                        Log.d("SensingService", "BackGroundで一回実行されたよ")
+                    },
+                )
+            }
         }
     }
 
@@ -86,16 +89,17 @@ class SensingUsecase(
         addSensor(context = context)
 
         val samplingFrequency = -1.0
+        val resolvedFileName = resolveFileName(fileName)
         coroutineScope.launch {
             sensorRepository.sensorStart(
-                fileName = fileName,
+                fileName = resolvedFileName,
                 sensors = targetSensors,
                 samplingFrequency = samplingFrequency,
             )
         }
     }
 
-    fun stop(
+    suspend fun stop(
         onStopped: () -> Unit,
         onSend: ((List<File?>) -> Unit)? = null,
     ) {
@@ -130,8 +134,6 @@ class SensingUsecase(
             },
         )
         targetSensors = mutableListOf() // センサーをリセット
-
-        sensorRepository.onCleared() // メモリーリークを防止する
     }
 
     suspend fun timerStart(
@@ -177,5 +179,16 @@ class SensingUsecase(
     private fun addSensor(context: Context) {
         targetSensors.add(BLERepository(context))
         targetSensors.add(WiFiRepository(context))
+    }
+
+    private fun resolveFileName(fileName: String): String {
+        val normalized =
+            fileName
+                .trim()
+                .ifBlank { "sensing_${DateUtils.getNowDate()}" }
+
+        return normalized
+            .replace(Regex("""[\\/:*?"<>|]"""), "_")
+            .replace(Regex("""\.\.+"""), "_")
     }
 }
