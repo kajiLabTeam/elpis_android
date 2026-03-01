@@ -65,6 +65,11 @@ class OtherFileStorageApi(
     fun stop(): File {
         // 別スレッドを停止
         handler.removeCallbacks(runnable)
+        if (queue.isNotEmpty()) {
+            val copy = queue.toArray()
+            queue.clear()
+            saveArrayDeque(copy)
+        }
         return File(filePath)
     }
 
